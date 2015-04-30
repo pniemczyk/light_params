@@ -30,7 +30,7 @@ describe LightParams::Lash do
   end
 
   subject do
-    object_factory(params: source, real_class_name: 'Test') do
+    object_factory(params: source) do
       properties :first_name, :laste_name
       property :age, with: -> (v) { v.to_i }
       property :created_at, with: :to_date
@@ -49,6 +49,12 @@ describe LightParams::Lash do
   end
 
   describe 'ability to use method instead of []' do
+    subject do
+      object_factory(params: source) do
+        properties :first_name, :laste_name
+      end
+    end
+
     let(:source) { person_source }
 
     it '#first_name returns same value as [:first_name]' do
@@ -58,26 +64,118 @@ describe LightParams::Lash do
   end
 
   describe 'ability to transform value before being assigned' do
+    subject do
+      object_factory(params: source) do
+        properties :first_name, :laste_name, with: -> (v) { v.to_i }
+        property :age, with: -> (v) { v.to_i }
+        property :created_at, with: :to_date
+        property :children, collection: true do
+          property :age, with: -> (v) { v.to_i }
+          property :created_at, with: :to_date
+        end
+
+        private
+
+        def to_date(value)
+          DateTime.parse(value)
+        end
+      end
+    end
+
+
     let(:source) { person_source }
+
     it '#age returns as int by transformation' do
+      expect(subject.first_name).to eq(0)
+      expect(subject.laste_name).to eq(0)
       expect(subject.age).to eq(source[:age].to_i)
+      expect(subject.created_at).to eq(DateTime.parse(source[:created_at]))
+      expect(subject.children.first.age).to eq(source[:children].first[:age].to_i)
+      expect(subject.children.first.created_at).to eq(DateTime.parse(source[:children].first[:created_at]))
     end
   end
+
   describe 'ability to assign to key from other name of key' do
+    subject do
+      object_factory(params: source) do
+        property :name, from: :first_name
+      end
+    end
+
+    let(:source) { person_source }
+
+    it '#name returns as [:first_name] by using from option' do
+      expect(subject.name).to eq(source[:first_name])
+    end
   end
+
   describe 'ability to set default value when value is not present' do
+    subject do
+      object_factory(params: source) do
+        property :name, default: 'Andrzej'
+      end
+    end
+
+    let(:source) { {} }
+
+    it '#name returns Andrzej by using default option' do
+      expect(subject.name).to eq('Andrzej')
+    end
   end
-  describe 'ability to get value from string or symbol key' do
-  end
+
   describe 'ability to make uniq collecion' do
+    subject do
+      object_factory(params: source) do
+        property :children, collection: true, uniq: true
+      end
+    end
+
+    let(:source) do
+      {
+        children: [
+          first_child_source,
+          first_child_source,
+          last_child_source,
+          last_child_source
+        ]
+      }
+    end
+
+    it '#children are returned as uniq' do
+      expect(subject.children.count).to eq(2)
+      expect(subject.children.first.first_name).to eq(first_child_source[:first_name])
+      expect(subject.children.last.first_name).to eq(last_child_source[:first_name])
+    end
   end
+
   describe 'ability to clear collection from nil values' do
+    subject do
+      object_factory(params: source) do
+        property :children, collection: true, compact: true
+      end
+    end
+
+    let(:source) do
+      {
+        children: [
+          first_child_source,
+          nil,
+          nil,
+          last_child_source
+        ]
+      }
+    end
+
+    it '#children are returned as compact' do
+      expect(subject.children.count).to eq(2)
+      expect(subject.children.first.first_name).to eq(first_child_source[:first_name])
+      expect(subject.children.last.first_name).to eq(last_child_source[:first_name])
+    end
   end
-  describe 'ability to clear collection from empty values' do
+
+  describe 'ability to make instance for defined class from value' do
   end
   describe 'ability to validate values' do
-  end
-  describe 'ability to make instance for defined class from value' do
   end
   describe '.from_json' do
   end

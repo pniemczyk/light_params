@@ -31,9 +31,9 @@ module LightParams
 
       def _add_property_source(prop_name, &block)
         klass = Class.new(self)
-        klass.class_eval(&block)
         klass.instance_variable_set(:@config, {})
         klass.instance_variable_set(:@name, ActiveSupport::Inflector.classify(prop_name))
+        klass.class_eval(&block)
         _properties_sources[prop_name] = { class: klass }
       end
 
@@ -71,8 +71,25 @@ module LightParams
       # end
     end
 
+    def respond_to?(method_name, include_private = false)
+      return _properties.include?(method_name.to_s.delete('=').to_sym) unless super
+      false
+    end
+
+    private
+
+    def _properties
+      self.class.config[:properties] || {}
+    end
+
+    def method_missing(method, *args, &block)
+      method_writer = method.to_s[-1] == '='
+      return (method_writer ? self.[]=(method.to_s[-1].to_sym, *args, &block) : self.[](method, *args, &block)) if respond_to?(method)
+      super
+    end
+
     def attributes
-      OpenStruct.new(keys: self.class.config[:properties])
+      OpenStruct.new(keys: _properties)
     end
   end
 end
