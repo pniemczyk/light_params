@@ -224,6 +224,10 @@ describe LightParams::Lash do
       expect(test_obj).to be_kind_of(described_class)
       expect(test_obj.first_name).to eq(first_child_source[:first_name])
     end
+
+    it 'raise JsonParseError when parsing fail' do
+      expect { subject.from_json('abc') }.to raise_error(LightParams::Errors::JsonParseError)
+    end
   end
 
   describe '#to_json' do

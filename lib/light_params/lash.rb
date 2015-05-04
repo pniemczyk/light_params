@@ -17,6 +17,8 @@ module LightParams
 
     def self.from_json(json)
       new(JSON.parse(json))
+    rescue => e
+      raise(Errors::JsonParseError, e.message)
     end
 
     def attributes
