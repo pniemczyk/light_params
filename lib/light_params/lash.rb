@@ -15,8 +15,10 @@ module LightParams
       @name || super
     end
 
-    def self.from_json(json)
-      new(JSON.parse(json))
+    def self.from_json(json, include_root = false)
+      hash = JSON.parse(json)
+      hash = hash.values.first if include_root
+      new(hash)
     rescue => e
       raise(Errors::JsonParseError, e.message)
     end
