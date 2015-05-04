@@ -174,13 +174,90 @@ describe LightParams::Lash do
   end
 
   describe 'ability to make instance for defined class from value' do
+    class Child
+      attr_accessor :first_name, :laste_name, :age, :created_at
+      def initialize(attrs = {})
+        attrs.each { |k, v| send("#{k}=", v) }
+      end
+    end
+
+    subject do
+      object_factory(params: source) do
+        property :child, model: Child
+        property :children, collection: Child
+      end
+    end
+
+    let(:source) do
+      {
+        child: first_child_source,
+        children: [
+          first_child_source,
+          last_child_source
+        ]
+      }
+    end
+
+    it '#children are returned as compact' do
+      expect(subject.child).to be_kind_of(Child)
+      expect(subject.child.first_name).to eq(first_child_source[:first_name])
+      expect(subject.children.count).to eq(2)
+      expect(subject.children.first).to be_kind_of(Child)
+      expect(subject.children.last).to be_kind_of(Child)
+      expect(subject.children.first.first_name).to eq(first_child_source[:first_name])
+      expect(subject.children.last.first_name).to eq(last_child_source[:first_name])
+    end
   end
+
   describe 'ability to validate values' do
   end
+
   describe '.from_json' do
+    subject do
+      class_factory do
+        properties :first_name, :laste_name, :age, :created_at
+      end
+    end
+
+    it 'returns instance of lash' do
+      test_obj = subject.from_json(first_child_source.to_json)
+      expect(test_obj).to be_kind_of(described_class)
+      expect(test_obj.first_name).to eq(first_child_source[:first_name])
+    end
   end
+
   describe '#to_json' do
+    subject do
+      object_factory(params: first_child_source) do
+        properties :first_name, :laste_name
+        property :age, with: -> (v) { v.to_i }
+        property :created_at, with: -> (v) { DateTime.parse(v) }
+      end
+    end
+
+    it 'returns json' do
+      expect(subject.to_json).to eq(
+        '{"first_name":"Emilia","laste_name":"Niemczyk","age":4,"created_at":"2011-02-11T18:37:52.000+02:00"}'
+      )
+    end
   end
+
   describe '#as_json' do
+    subject do
+      object_factory(params: first_child_source) do
+        properties :first_name, :laste_name
+        property :age, with: -> (v) { v.to_i }
+        property :created_at, with: -> (v) { DateTime.parse(v) }
+      end
+    end
+
+    it 'returns json' do
+      expect(subject.as_json).to eq(
+        first_child_source.merge(
+          age: first_child_source[:age].to_i,
+          created_at: DateTime.parse(first_child_source[:created_at])
+        )
+      )
+    end
   end
 end

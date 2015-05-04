@@ -1,6 +1,9 @@
+require 'active_model'
+
 module LightParams
   class Lash < Hash
     include PropertiesConfiguration
+    include ActiveModel::Serializers::JSON
 
     def initialize(params = {})
       LashBuilder.lash_params(self, params).each_pair do |k, v|
@@ -12,9 +15,12 @@ module LightParams
       @name || super
     end
 
-    # def attributes
-    #   OpenStruct.new(keys: self.class.config[:properties])
-    # end
+    def self.from_json(json)
+      new(JSON.parse(json))
+    end
 
+    def attributes
+      OpenStruct.new(keys: self.class.config[:properties])
+    end
   end
 end
