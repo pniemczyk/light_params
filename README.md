@@ -1,5 +1,9 @@
 # LightParams
 
+[![Gem Version](https://badge.fury.io/rb/light_params.svg)](http://badge.fury.io/rb/light_params)
+[![Build Status](https://travis-ci.org/pniemczyk/light_params.svg?branch=master)](https://travis-ci.org/pniemczyk/light_params)
+[![Coverage Status](https://coveralls.io/repos/pniemczyk/light_params/badge.png)](https://coveralls.io/r/pniemczyk/light_params)
+
 This is a better structure for the has. Thanks to this class you can from symbolized/stringify hash extract what you need with proper transformation values and keys.
 
 ## Examples
