@@ -26,5 +26,11 @@ module LightParams
     def attributes
       OpenStruct.new(keys: self.class.config[:properties])
     end
+
+    private
+
+    def include_root_in_json
+      false
+    end
   end
 end

@@ -16,8 +16,8 @@ module LightParams
           properties.each do |key|
             modification = properties_modifications[key] || {}
             value        = hash_value(params, (modification[:from] || key))
-            fail(MissingParamError, key.to_s) if modification[:required] && value.nil?
-            next result[key] = (modification[:default] || value) if value.nil? || value.empty?
+            raise(MissingParamError, key.to_s) if modification[:required] && value.nil?
+            next result[key] = (modification[:default] || (modification[:collection] ? [] : value)) if value.nil? || value.empty?
             value = prepare_sources(properties_sources[key], value) if properties_sources[key]
             value = transform_value(modification[:with], lash, key, value) if modification[:with]
             next result[key] = modelable_value(modification[:model], value) if modification[:model]
@@ -53,7 +53,7 @@ module LightParams
 
       def collectionaize_value(modifications, value, sourced)
         collection = modifications[:collection]
-        fail(Errors::MissingCollectionError, "on key: #{key}") unless value.is_a? Array
+        raise(Errors::MissingCollectionError, "on key: #{key}") unless value.is_a? Array
         value.compact! if modifications[:compact]
         value.uniq! if modifications[:uniq]
         if collection == true

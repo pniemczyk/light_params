@@ -23,7 +23,7 @@ module LightParams
       def property(prop_name, options = {}, &block)
         _add_property(prop_name)
         _add_property_modifications(prop_name, options)
-        # _add_property_validation(prop_name, options[:validates]) if options[:validates]
+        _add_property_validation(prop_name, options[:validates]) if options[:validates]
         _add_property_source(prop_name, &block) if block
       end
 
@@ -49,15 +49,15 @@ module LightParams
         config[:properties] ||= Set.new
       end
 
+      def _validations
+        config[:validations] ||= {}
+      end
+
       def _add_property_modifications(prop_name, options = {})
         modifications = options.slice(:from, :with, :default, :model, :collection, :uniq, :compact, :required)
         return if modifications.empty?
         _properties_modifications[prop_name] = modifications
       end
-
-      # def _add_property(prop_name)
-      #   send(:attr_accessor, prop_name)  if _properties.add?(prop_name)
-      # end
 
       def _add_property(prop_name)
         return unless _properties.add?(prop_name)
@@ -66,9 +66,9 @@ module LightParams
         define_method(property_assignment) { |value| self.[]=(prop_name, value) }
       end
 
-      # def _add_property_validation(prop_name, validation)
-      #   validates(prop_name, validation)
-      # end
+      def _add_property_validation(prop_name, validation)
+        _validations[prop_name] = validation
+      end
     end
 
     def respond_to?(method_name, include_private = false)

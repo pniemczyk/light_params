@@ -2,7 +2,7 @@ describe LightParams::Lash do
   let(:person_source) do
     {
       first_name: 'Pawel',
-      laste_name: 'Niemczyk',
+      last_name: 'Niemczyk',
       age: '30',
       created_at: '1983-09-07T18:37:52+02:00',
       children: children_source
@@ -14,7 +14,7 @@ describe LightParams::Lash do
   let(:first_child_source) do
     {
       first_name: 'Emilia',
-      laste_name: 'Niemczyk',
+      last_name: 'Niemczyk',
       age: '4',
       created_at: '2011-02-11T18:37:52+02:00'
     }
@@ -23,7 +23,7 @@ describe LightParams::Lash do
   let(:last_child_source) do
     {
       first_name: 'Tomasz',
-      laste_name: 'Niemczyk',
+      last_name: 'Niemczyk',
       age: '2',
       created_at: '2012-06-27T18:37:52+02:00'
     }
@@ -31,11 +31,11 @@ describe LightParams::Lash do
 
   subject do
     object_factory(params: source) do
-      properties :first_name, :laste_name
+      properties :first_name, :last_name
       property :age, with: -> (v) { v.to_i }
       property :created_at, with: :to_date
       property :children, collection: true do
-        properties :first_name, :laste_name
+        properties :first_name, :last_name
         property :age, with: -> (v) { v.to_i }
         property :created_at, with: :to_date
       end
@@ -51,7 +51,7 @@ describe LightParams::Lash do
   describe 'ability to use method instead of []' do
     subject do
       object_factory(params: source) do
-        properties :first_name, :laste_name
+        properties :first_name, :last_name
       end
     end
 
@@ -66,7 +66,7 @@ describe LightParams::Lash do
   describe 'ability to transform value before being assigned' do
     subject do
       object_factory(params: source) do
-        properties :first_name, :laste_name, with: -> (v) { v.to_i }
+        properties :first_name, :last_name, with: -> (v) { v.to_i }
         property :age, with: -> (v) { v.to_i }
         property :created_at, with: :to_date
         property :children, collection: true do
@@ -87,7 +87,7 @@ describe LightParams::Lash do
 
     it '#age returns as int by transformation' do
       expect(subject.first_name).to eq(0)
-      expect(subject.laste_name).to eq(0)
+      expect(subject.last_name).to eq(0)
       expect(subject.age).to eq(source[:age].to_i)
       expect(subject.created_at).to eq(DateTime.parse(source[:created_at]))
       expect(subject.children.first.age).to eq(source[:children].first[:age].to_i)
@@ -175,7 +175,7 @@ describe LightParams::Lash do
 
   describe 'ability to make instance for defined class from value' do
     class Child
-      attr_accessor :first_name, :laste_name, :age, :created_at
+      attr_accessor :first_name, :last_name, :age, :created_at
       def initialize(attrs = {})
         attrs.each { |k, v| send("#{k}=", v) }
       end
@@ -209,13 +209,10 @@ describe LightParams::Lash do
     end
   end
 
-  describe 'ability to validate values' do
-  end
-
   describe '.from_json' do
     subject do
       class_factory do
-        properties :first_name, :laste_name, :age, :created_at
+        properties :first_name, :last_name, :age, :created_at
       end
     end
 
@@ -232,8 +229,8 @@ describe LightParams::Lash do
 
   describe '#to_json' do
     subject do
-      object_factory(params: first_child_source) do
-        properties :first_name, :laste_name
+      object_factory(params: first_child_source, real_class_name: 'TestToJson') do
+        properties :first_name, :last_name
         property :age, with: -> (v) { v.to_i }
         property :created_at, with: -> (v) { DateTime.parse(v) }
       end
@@ -241,15 +238,15 @@ describe LightParams::Lash do
 
     it 'returns json' do
       expect(subject.to_json).to eq(
-        '{"first_name":"Emilia","laste_name":"Niemczyk","age":4,"created_at":"2011-02-11T18:37:52.000+02:00"}'
+        '{"age":4,"created_at":"2011-02-11T18:37:52+02:00","first_name":"Emilia","last_name":"Niemczyk"}'
       )
     end
   end
 
   describe '#as_json' do
     subject do
-      object_factory(params: first_child_source) do
-        properties :first_name, :laste_name
+      object_factory(params: first_child_source, real_class_name: 'TestAsJson') do
+        properties :first_name, :last_name
         property :age, with: -> (v) { v.to_i }
         property :created_at, with: -> (v) { DateTime.parse(v) }
       end
