@@ -18,13 +18,6 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = %w(lib)
 
-  begin
-    require 'ruby_dep/travis'
-    spec.required_ruby_version = RubyDep::Travis.new.version_constraint
-  rescue LoadError
-    abort "Install 'ruby_dep' gem before building this gem"
-  end
-
   spec.add_runtime_dependency 'activesupport', '~> 3.0'
   spec.add_runtime_dependency 'activemodel', '~> 3.0'
   spec.add_development_dependency 'ruby_dep', '~> 1.1'
